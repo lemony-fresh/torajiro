@@ -11,3 +11,9 @@
 *.lai
 *.la
 *.a
+
+# Temporary files from Kile
+*~
+
+# Compiled binary
+main
