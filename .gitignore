@@ -17,3 +17,10 @@
 
 # Compiled binary
 main
+
+# Qt creator files
+src/*.config
+src/*.creator
+src/*.creator.user
+src/*.files
+src/*.includes

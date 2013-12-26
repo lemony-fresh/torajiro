@@ -23,8 +23,8 @@ int main(){
     GoInit();
 
     /* read test file */
-    std::string testfile("../../go_bachelor_thesis/data/gamesets/9x9/from_gobase/book1/game_001.sgf");
-    std::ifstream in(testfile);
+    std::string testfile("../sgf/9x9_test.sgf");
+    std::ifstream in(testfile.c_str());
     if (! in) { std::cerr << "Could not open file " << testfile << std::endl; return 1; }
     SgGameReader reader(in);
     SgNode* root = reader.ReadGame();
