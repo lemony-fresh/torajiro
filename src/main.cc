@@ -18,31 +18,8 @@ int main(int argc, char** argv){
     SgInit();
     GoInit();
 
-<<<<<<< HEAD
-    // for testing
     std::string database_path = (argc >= 2 ? std::string(argv[1]) : std::string("../../home/go_bachelor_thesis/data/gamesets/9x9/from_gobase"));
     std::vector<GoGame*> games = read_games(database_path);
-=======
-    /* read test file */
-    std::string testfile("../sgf/9x9_test.sgf");
-    std::ifstream in(testfile.c_str());
-    if (! in) { std::cerr << "Could not open file " << testfile << std::endl; return 1; }
-    SgGameReader reader(in);
-    SgNode* root = reader.ReadGame();
-    if (root == 0) { std::cerr << "No games in file " << testfile << std::endl; return 1; }
-    if (reader.GetWarnings().any()){
-        SgWarning() << testfile << ":\n";
-        reader.PrintWarnings(SgDebug());
-    }
-
-    /* convert node tree into game */
-    GoGame game;
-    game.Init(root);
-    GoRules rules;
-    rules.SetKomi(GoNodeUtil::GetKomi(game.CurrentNode()));
-    rules.SetHandicap(GoNodeUtil::GetHandicap(game.CurrentNode()));
-    game.SetRulesGlobal(rules);
->>>>>>> origin/HEAD
 
     GoGame* game = games.at(0);
 
