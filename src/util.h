@@ -1,5 +1,4 @@
-#ifndef UTIL_H
-#define UTIL_H
+#pragma once
 
 namespace util{
 
@@ -12,5 +11,3 @@ template<int N> inline bool is_star_point(int x, int y) {
 }
 
 }
-
-#endif // UTIL_H

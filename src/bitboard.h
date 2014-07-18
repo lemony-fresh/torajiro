@@ -1,5 +1,4 @@
-#ifndef BITBOARD_H
-#define BITBOARD_H
+#pragma once
 
 #include <bitset>
 #include <ostream>
@@ -8,6 +7,7 @@
 
 #include "util.h"
 
+#include "GoBoard.h"
 #include "SgBoardColor.h"
 #include "SgBWArray.h"
 
@@ -25,6 +25,15 @@ private:
 
 public:
     Bitboard(){
+    }
+
+    Bitboard(const GoBoard& other){
+        assert(N == other.Size());
+        for(int y = 0; y < N; ++y)
+            for(int x = 0; x < N; ++x){
+                SgPoint p = SgPointUtil::Pt(x+1, y+1);
+                set(x, y, other.GetColor(p));
+            }
     }
 
     inline bool is_occupied(int i) const {
@@ -64,13 +73,15 @@ public:
     }
 
     friend std::ostream& operator<<(std::ostream& o, const Bitboard& b) {
-        o << "\n   ";
-        for(int y = 1; y <= N; ++y)
+        o << "\n  ";
+        if (N >= 10)
+            o << " ";
+        for (int y = 1; y <= N; ++y)
             o << SgPointUtil::Letter(y) << " ";
         o << "\n";
-        for(int y = N-1; y >= 0; --y){
-            o << (y+1 < 10 ? " " : "") << y + 1 << " ";
-            for(int x = 0; x < N; ++x)
+        for (int y = N-1; y >= 0; --y){
+            o << (y+1 < 10 && N >= 10 ? " " : "") << y + 1 << " ";
+            for (int x = 0; x < N; ++x)
                 switch(b.get(x, y)){
                 case SG_WHITE: o << "O "; break;
                 case SG_BLACK: o << "X "; break;
@@ -79,12 +90,12 @@ public:
                 }
             o << (N > 9 && y+1 < 10 ? " " : "") << y + 1 << "\n";
         }
-        o << "   ";
+        o << "  ";
+        if (N >= 10)
+            o << " ";
         for(int y = 1; y <= N; ++y)
             o << SgPointUtil::Letter(y) << " ";
         o << std::endl;
         return o;
     }
 };
-
-#endif // BITBOARD_H

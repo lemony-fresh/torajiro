@@ -1,71 +1,50 @@
-#include <fstream>
 #include <iostream>
+#include <vector>
 
 // must be included first
 #include "SgSystem.h"
 
-#include "SgBlackWhite.h"
-#include "SgGameReader.h"
 #include "SgInit.h"
 #include "SgNode.h"
-#include "SgDebug.h"
 #include "GoGame.h"
 #include "GoInit.h"
-#include "GoNodeUtil.h"
-#include "SgPoint.h"
 
-#include "basics/bitboard.h"
+#include "sgfreader.h"
+
+int main(int argc, char** argv){
 
 
-int main(){
     /* initialize libs */
     SgInit();
     GoInit();
 
-    /* read test file */
-    std::string testfile("../../go_bachelor_thesis/data/gamesets/9x9/from_gobase/book1/game_001.sgf");
-    std::ifstream in(testfile);
-    if (! in) { std::cerr << "Could not open file " << testfile << std::endl; return 1; }
-    SgGameReader reader(in);
-    SgNode* root = reader.ReadGame();
-    if (root == 0) { std::cerr << "No games in file " << testfile << std::endl; return 1; }
-    if (reader.GetWarnings().any()){
-        SgWarning() << testfile << ":\n";
-        reader.PrintWarnings(SgDebug());
-    }
+    // for testing
+    std::string database_path = (argc >= 2 ? std::string(argv[1]) : std::string("../../home/go_bachelor_thesis/data/gamesets/9x9/from_gobase"));
+    std::vector<GoGame*> games = read_games(database_path);
 
-    /* convert node tree into game */
-    GoGame game;
-    game.Init(root);
-    GoRules rules;
-    rules.SetKomi(GoNodeUtil::GetKomi(game.CurrentNode()));
-    rules.SetHandicap(GoNodeUtil::GetHandicap(game.CurrentNode()));
-    game.SetRulesGlobal(rules);
+    GoGame* game = games.at(0);
 
-    std::cout << "board size: " << game.Board().Size() << std::endl;
-
-    std::cout << game.Board() << std::endl;
+    std::cout << "board size: " << game->Board().Size() << std::endl;
 
     std::vector<SgMove> gameline;
-    Bitboard<9> test;
     while(true){
-        SgMove move = game.CurrentMove();
+        std::cout << game->Board() << std::endl;
+
+        SgMove move = game->CurrentMove();
         if(!SgIsSpecialMove(move))
-            gameline.push_back(game.CurrentMove());
+            gameline.push_back(game->CurrentMove());
 
-        const GoBoard& board = game.Board();
-        for(int y = 0; y < 9; ++y)
-            for(int x = 0; x < 9; ++x){
-                SgPoint p = SgPointUtil::Pt(x+1, y+1);
-                test.set(x, y, board.GetColor(p));
-            }
-        std::cout << test;
-
-
-        if(!game.CanGoInDirection(SgNode::Direction::NEXT))
+        if(!game->CanGoInDirection(SgNode::Direction::NEXT))
             break;
-        game.GoInDirection(SgNode::Direction::NEXT);
+        game->GoInDirection(SgNode::Direction::NEXT);
     }
+
+    // TODO check that reading the other files worked as well
+
+    // all the games have been created with new so they must be deleted here
+    for (std::size_t i = 0; i < games.size(); ++i)
+        delete games.at(i);
+    games.clear();
 
     SgFini();
     GoFini();
