@@ -11,7 +11,7 @@ Prerequisites:
    - boost
       - it's best to use your package manager to install boost, e.g. sudo apt-get install libboost-dev
    - fuego:
-      - cd <parent dir of torajiro>
+      - cd parent/dir/of/torajiro
       - svn checkout https://svn.code.sf.net/p/fuego/code fuego
       - cd fuego/trunk && ./setup-build.sh && ./configure && make
 

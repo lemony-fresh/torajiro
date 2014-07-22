@@ -1,0 +1,27 @@
+statt die Pattern zu rotieren oder die rotierten Formen vorzuberechnen stattdessen vor dem Matching das Brett, das in die Query gesteckt wird, in alle 8 Rotationen bringen
+
+die Patterntranslationen werden beim Matching durchgefuehrt: geht bei Bitboards einfach und man braucht sich nur merken, welche Translationen nicht zu einem Overflow fuehren
+
+leere Felder (bis hin zum k-ten Stein) werden auch ins Bitboard aufgenommen
+
+wenn die rautenfoermige Huelle des Patterns (bis zum k-ten Stein) einen Rand schneidet, ist das Pattern ein Rand-Pattern und kann nur daran verschoben werden.
+wenn sie zwei Raender schneidet, koennen sie gar nicht verschoben werden.
+wenn sie keinen Rand schneidet, kann es auch nur so verschoben werden, dass es nie einen Rand schneiden wird.
+
+Distanz zum vorherigen Zug mit ins Pattern aufnehmen und in den UCT Playouts nur die Patterns mit der korrekten Distanz benutzen (--> keine Translationen)
+
+bagging, boosting oder stacking benutzen. mehrere MoveGuesser. laesst sich auch parallelisieren
+
+
+zur Qualitaetsbeurteilung in Go nicht komplette Spiele sondern nur correct prediction rate auf einem fest definierten Set von Spielen
+   - Nachteil: sagt nicht direkt etwas ueber die Gewinnwahrscheinlichkeit aus
+   - Vorteile: Gegner ist deutlich besser (Grossmeister). Man muss nicht auf Zuege des Gegners warten. Zeit zur Evaluation deutlich kuerzer (wichtig bspw. bei Parametertuning)
+
+
+aus den Pattern einen Hash-Wert berechnen und den mit einem Hash des Boards vergleichen. lässt sich Biometric Template Protection irgendwie dafür verwenden?
+
+
+CUDA:
+
+1 Block hat 8 Threads, jeder rechnet eine Rotation. ein Thread kann das Bit-Matching abbrechen, sobald ein int des Patterns schon nicht mit dem Board uebereinstimmt. das sollte in sehr vielen Faellen nicht zu Thread divergence fuehren
+oder 1 Block hat genug Threads, um alle Translationen damit behandeln zu koennen
