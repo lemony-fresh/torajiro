@@ -62,10 +62,7 @@ public:
         else if(color == SG_EMPTY)
             for(SgBWIterator it; it; ++it)
                 bw_bitboards[*it][i] = false;
-        else{
-            std::cerr << "color was neither white, nor black, nor empty: " << color << std::endl;
-            std::exit(1);
-        }
+        assert(color == SG_BLACK || color == SG_WHITE || color == SG_EMPTY);
     }
 
     inline void set(int x, int y, SgBoardColor color){
@@ -86,7 +83,7 @@ public:
                 case SG_WHITE: o << "O "; break;
                 case SG_BLACK: o << "X "; break;
                 case SG_EMPTY: o << (util::is_star_point<N>(x,y) ? "+ " : ". "); break;
-                default: throw std::invalid_argument("color was neither white, nor black, nor empty");;
+                default: throw std::invalid_argument("color was neither white, nor black, nor empty");
                 }
             o << (N > 9 && y+1 < 10 ? " " : "") << y + 1 << "\n";
         }

@@ -1,9 +1,9 @@
 SHELL := /bin/bash
 
-FUEGO_BASEPATH ?= ../../fuego/trunk
+FUEGO_BASEPATH ?= ../../fuego
 
 CXXFLAGS := $(shell grep CXXFLAGS ${FUEGO_BASEPATH}/Makefile | cut -d'=' -f2)
-CXXFLAGS += -std=c++0x
+CXXFLAGS += -std=c++11
 
 SOURCES := $(wildcard [^_]*.cc)
 OBJECTS := $(foreach file,$(SOURCES),$(subst .cc,.o,$(file)))

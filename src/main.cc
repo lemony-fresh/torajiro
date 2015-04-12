@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <string>
 
 // must be included first
 #include "SgSystem.h"
@@ -11,42 +12,53 @@
 
 #include "sgfreader.h"
 
-int main(int argc, char** argv){
-
+template <int N> void do_everything(std::string const& database_path) {
 
     /* initialize libs */
     SgInit();
     GoInit();
 
-    std::string database_path = (argc >= 2 ? std::string(argv[1]) : std::string("../../home/go_bachelor_thesis/data/gamesets/9x9/from_gobase"));
-    std::vector<GoGame*> games = read_games(database_path);
-
-    GoGame* game = games.at(0);
-
-    std::cout << "board size: " << game->Board().Size() << std::endl;
-
-    std::vector<SgMove> gameline;
-    while(true){
-        std::cout << game->Board() << std::endl;
-
-        SgMove move = game->CurrentMove();
-        if(!SgIsSpecialMove(move))
-            gameline.push_back(game->CurrentMove());
-
-        if(!game->CanGoInDirection(SgNode::Direction::NEXT))
-            break;
-        game->GoInDirection(SgNode::Direction::NEXT);
-    }
-
-    // TODO check that reading the other files worked as well
-
-    // all the games have been created with new so they must be deleted here
-    for (std::size_t i = 0; i < games.size(); ++i)
-        delete games.at(i);
+    /* read all stuff */
+    std::vector<std::shared_ptr<GoGame> > games = read_games(database_path);
+    std::vector<std::pair<std::shared_ptr<Bitboard<N> >, GoPlayerMove> > moves = extract_moves<N>(games);
     games.clear();
+
+    // rotate boards and moves properly
+
+    // find k-th nearest stone, remove all that are further away
+
+    // compute admissible translations
+
+    // generate pattern (partially cleared board + move + translation info)
+
+    // insert into big list after searching for duplicates
+
+    // assign all patterns scores how often they matched in the training set and how often they were actually played
+
+    // prune too infrequently used and too inaccurate patterns
 
     SgFini();
     GoFini();
+}
+
+int main(int argc, char** argv){
+
+    if (argc < 2) {
+        std::cout << "Usage: " << argv[0] << " <board size> <.sgf file or folder>\ne.g. "
+                  << argv[0] << " 9 $HOME/repos/home/go_bachelor_thesis/data/gamesets/9x9/from_gobase"
+                  << std::endl;
+        return -1;
+    }
+
+    int const n = std::stoi(std::string(argv[1]));
+    std::string const database_path = std::string(argv[1]);
+
+    switch (n) {
+    case  9: do_everything< 9>(database_path); break;
+    case 13: do_everything<13>(database_path); break;
+    case 19: do_everything<19>(database_path); break;
+    default: throw std::invalid_argument("board size is not 9, 13 or 19");
+    }
 
     return 0;
 }

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <memory>
 
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 #include <boost/filesystem.hpp>
@@ -13,18 +14,15 @@
 #include "SgGameReader.h"
 #include "GoNodeUtil.h"
 
-#include "GoGame.h"
+#include "sgfreader.h"
 
 bool ends_with_sgf(const boost::filesystem::path& s) {
     std::string extension(".sgf");
     return extension.compare(s.extension().string()) == 0;
 }
 
-std::vector<GoGame*> read_games(const std::string &path)
-{
-
-
-    std::vector<GoGame*> games;
+std::vector<std::shared_ptr<GoGame> > read_games(const std::string &path) {
+    std::vector<std::shared_ptr<GoGame> > games;
 
     /* find all sgf files */
 
@@ -44,11 +42,7 @@ std::vector<GoGame*> read_games(const std::string &path)
     std::sort(all_files.begin(), all_files.end());
 
     /* read all sgf files */
-
-    // TODO: check that all game files have the same board size etc.
-    // TODO: progress output
-
-    for(boost::filesystem::path file : all_files) {
+    for(boost::filesystem::path const& file : all_files) {
         std::ifstream in(file.string());
         if (! in) { std::cerr << "Could not open file " << file.string() << std::endl; continue; }
         SgGameReader reader(in);
@@ -60,7 +54,7 @@ std::vector<GoGame*> read_games(const std::string &path)
         }
 
         /* convert node tree into game */
-        GoGame* game = new GoGame;
+        std::shared_ptr<GoGame> game = std::make_shared<GoGame>();
         game->Init(root);
         GoRules rules;
         rules.SetKomi(GoNodeUtil::GetKomi(game->CurrentNode()));
@@ -68,6 +62,11 @@ std::vector<GoGame*> read_games(const std::string &path)
         game->SetRulesGlobal(rules);
 
         games.push_back(game);
+
+        if (game->Board().Size() != games[0]->Board().Size())
+            std::cout << "game " << file.string()
+                      << "has a board size that differs from the first game: "
+                      << game->Board().Size() << std::endl;
     }
 
     return games;
