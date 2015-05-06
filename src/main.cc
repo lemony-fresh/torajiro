@@ -19,9 +19,8 @@ template <int N> void do_everything(std::string const& database_path) {
     GoInit();
 
     /* read all stuff */
-    std::vector<std::shared_ptr<GoGame> > games = read_games(database_path);
-    std::vector<std::pair<std::shared_ptr<Bitboard<N> >, GoPlayerMove> > moves = extract_moves<N>(games);
-    games.clear();
+    std::vector<std::pair<std::shared_ptr<Bitboard<N> >, GoPlayerMove> > moves = read_games<N>(database_path);
+    std::cout << "These games contained " << moves.size() << " moves." << std::endl;
 
     // rotate boards and moves properly
 
@@ -51,7 +50,7 @@ int main(int argc, char** argv){
     }
 
     int const n = std::stoi(std::string(argv[1]));
-    std::string const database_path = std::string(argv[1]);
+    std::string const database_path = std::string(argv[2]);
 
     switch (n) {
     case  9: do_everything< 9>(database_path); break;
