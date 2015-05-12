@@ -10,7 +10,8 @@
 #include "GoGame.h"
 #include "GoInit.h"
 
-#include "sgfreader.h"
+#include "sgf_reader.h"
+#include "move_normalizer.h"
 
 template <int N> void do_everything(std::string const& database_path) {
 
@@ -19,10 +20,14 @@ template <int N> void do_everything(std::string const& database_path) {
     GoInit();
 
     /* read all stuff */
-    std::vector<std::pair<std::shared_ptr<Bitboard<N> >, GoPlayerMove> > moves = read_games<N>(database_path);
-    std::cout << "These games contained " << moves.size() << " moves." << std::endl;
+    std::cout << "Reading all sgf games..." << std::flush;
+    std::vector<std::pair<std::shared_ptr<Bitboard<N>>, GoPlayerMove>> moves = read_games<N>(database_path);
+    std::cout << moves.size() << " moves found." << std::endl;
 
-    // rotate boards and moves properly
+    /* rotate boards and moves such that the move is in a normalized position */
+    std::cout << "Normalizing all moves..." << std::flush;
+    normalize_all_moves(moves);
+    std::cout << "done." << std::endl;
 
     // find k-th nearest stone, remove all that are further away
 

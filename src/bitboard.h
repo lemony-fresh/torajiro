@@ -17,7 +17,7 @@ class Bitboard
 {
 private:
 
-    SgBWArray<std::bitset<N*N> > bw_bitboards;
+    SgBWArray<std::bitset<N*N>> bw_bitboards;
 
     inline int twoDto1D(int x, int y) const {
         return y * N + x;
@@ -36,37 +36,28 @@ public:
             }
     }
 
-    inline bool is_occupied(int i) const {
+    inline bool is_occupied(int x, int y) const {
+        int i = twoDto1D(x, y);
         for(SgBWIterator it; it; ++it)
             if(bw_bitboards[*it][i]) return true;
         return false;
     }
 
-    inline bool is_occupied(int x, int y) const {
-        return is_occupied(twoDto1D(x, y));
-    }
-
-    inline SgBoardColor get(int i) const {
+    inline SgBoardColor get(int x, int y) const {
+        int i = twoDto1D(x, y);
         for(SgBWIterator it; it; ++it)
             if(bw_bitboards[*it][i]) return *it;
         return SG_EMPTY;
     }
 
-    inline SgBoardColor get(int x, int y) const {
-        return get(twoDto1D(x, y));
-    }
-
-    inline void set(int i, SgBoardColor color){
+    inline void set(int x, int y, SgBoardColor color){
+        int i = twoDto1D(x, y);
         if(color == SG_BLACK || color == SG_WHITE)
             bw_bitboards[color][i] = true;
         else if(color == SG_EMPTY)
             for(SgBWIterator it; it; ++it)
                 bw_bitboards[*it][i] = false;
         assert(color == SG_BLACK || color == SG_WHITE || color == SG_EMPTY);
-    }
-
-    inline void set(int x, int y, SgBoardColor color){
-        set(twoDto1D(x, y), color);
     }
 
     friend std::ostream& operator<<(std::ostream& o, const Bitboard& b) {
