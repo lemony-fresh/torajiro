@@ -53,8 +53,9 @@ public:
 
     void set(SgPoint const & p, SgBoardColor const & color) {
         int i = twoDto1D(SgPointUtil::Col(p) - 1, SgPointUtil::Row(p) - 1);
-        if(color == SG_BLACK || color == SG_WHITE)
-            bw_bitboards[color][i] = true;
+        if (color == SG_BLACK || color == SG_WHITE)
+            for (SgBWIterator it; it; ++it)
+                bw_bitboards[*it][i] = (*it == color);
         else if(color == SG_EMPTY)
             for(SgBWIterator it; it; ++it)
                 bw_bitboards[*it][i] = false;
@@ -68,15 +69,17 @@ public:
         for (int y = 1; y <= N; ++y)
             o << SgPointUtil::Letter(y) << " ";
         o << "\n";
-        for (int y = N; y >= 1; --y){
+        for (int y = 1; y <= N; ++y){
             o << (y < 10 && N >= 10 ? " " : "") << y << " ";
-            for (int x = 1; x <= N; ++x)
-                switch(b.get(SgPointUtil::Pt(x, y))){
+            for (int x = 1; x <= N; ++x) {
+                SgPoint p = SgPointUtil::Pt(x,y);
+                switch (b.get(p)) {
                 case SG_WHITE: o << "O "; break;
                 case SG_BLACK: o << "X "; break;
-                case SG_EMPTY: o << (util::is_star_point<N>(x,y) ? "+ " : ". "); break;
+                case SG_EMPTY: o << (util::is_star_point<N>(p) ? "+ " : ". "); break;
                 default: throw std::invalid_argument("color was neither white, nor black, nor empty");
                 }
+            }
             o << (N > 9 && y < 10 ? " " : "") << y << "\n";
         }
         o << "  ";

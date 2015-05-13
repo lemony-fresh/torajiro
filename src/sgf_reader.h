@@ -36,9 +36,9 @@ bool ends_with_sgf(const boost::filesystem::path& s) {
  * @return
  */
 template <int N>
-std::vector<std::pair<std::shared_ptr<Bitboard<N>>, GoPlayerMove>>
+std::vector<std::shared_ptr<std::pair<Bitboard<N>, GoPlayerMove>>>
 read_games(const std::string &path) {
-    std::vector<std::pair<std::shared_ptr<Bitboard<N>>,GoPlayerMove>> moves;
+    std::vector<std::shared_ptr<std::pair<Bitboard<N>, GoPlayerMove>>> moves;
 
     /* find all .sgf files */
     std::vector<boost::filesystem::path> all_files;
@@ -97,8 +97,8 @@ read_games(const std::string &path) {
             // push current move if it's not special (pass move or before game start)
             if(!SgIsSpecialMove(move)) {
                 GoPlayerMove player_move(game.Board().ToPlay(), game.CurrentMove());
-                auto board = std::make_shared<Bitboard<N> >(game.Board());
-                moves.push_back(std::make_pair(board, player_move));
+                auto combo = std::make_pair(Bitboard<N>(game.Board()), player_move);
+                moves.push_back(std::make_shared<std::pair<Bitboard<N>, GoPlayerMove>>(combo));
             }
             if(!game.CanGoInDirection(SgNode::Direction::NEXT))
                 break;

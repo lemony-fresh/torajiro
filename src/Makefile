@@ -20,6 +20,9 @@ all: ${OBJECTS}
 %.o: %.cc ${HEADERS}
 	${CXX} -c -o $@ $< ${CXXFLAGS} ${EXT_INCL}
 
+test:
+	${MAKE} -C tests
+
 clean: FORCE
 	${RM} ${OBJECTS} ${TARGET}
 

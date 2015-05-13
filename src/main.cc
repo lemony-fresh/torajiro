@@ -21,7 +21,7 @@ template <int N> void do_everything(std::string const& database_path) {
 
     /* read all stuff */
     std::cout << "Reading all sgf games..." << std::flush;
-    std::vector<std::pair<std::shared_ptr<Bitboard<N>>, GoPlayerMove>> moves = read_games<N>(database_path);
+    std::vector<std::shared_ptr<std::pair<Bitboard<N>, GoPlayerMove>>> moves = read_games<N>(database_path);
     std::cout << moves.size() << " moves found." << std::endl;
 
     /* rotate boards and moves such that the move is in a normalized position */
