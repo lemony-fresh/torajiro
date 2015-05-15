@@ -12,30 +12,25 @@
 
 #include "sgf_reader.h"
 #include "move_normalizer.h"
+#include "pattern.h"
+#include "pattern_generator.h"
 
-template <int N> void do_everything(std::string const& database_path) {
+template <std::size_t N> void do_everything(std::string const& database_path) {
 
-    /* initialize libs */
     SgInit();
     GoInit();
 
-    /* read all stuff */
     std::cout << "Reading all sgf games..." << std::flush;
-    std::vector<std::shared_ptr<std::pair<Bitboard<N>, GoPlayerMove>>> moves = read_games<N>(database_path);
+    std::vector<std::pair<BitboardPtr<N>, GoPlayerMove>> moves = read_games<N>(database_path);
     std::cout << moves.size() << " moves found." << std::endl;
 
-    /* rotate boards and moves such that the move is in a normalized position */
     std::cout << "Normalizing all moves..." << std::flush;
     normalize_all_moves(moves);
     std::cout << "done." << std::endl;
 
-    // find k-th nearest stone, remove all that are further away
-
-    // compute admissible translations
-
-    // generate pattern (partially cleared board + move + translation info)
-
-    // insert into big list after searching for duplicates
+    std::cout << "Generating patterns..." << std::flush;
+    std::vector<PatternPtr<N>> patterns = generate_patterns<N>(moves);
+    std::cout << patterns.size() << " patterns generated." << std::endl;
 
     // assign all patterns scores how often they matched in the training set and how often they were actually played
 
@@ -54,7 +49,7 @@ int main(int argc, char** argv){
         return -1;
     }
 
-    int const n = std::stoi(std::string(argv[1]));
+    std::size_t const n = std::stoi(std::string(argv[1]));
     std::string const database_path = std::string(argv[2]);
 
     switch (n) {

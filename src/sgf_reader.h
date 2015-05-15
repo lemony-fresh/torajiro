@@ -35,10 +35,10 @@ bool ends_with_sgf(const boost::filesystem::path& s) {
  * @param path if path is a file, only this file is read, otherwise all sgf files below this path are read.
  * @return
  */
-template <int N>
-std::vector<std::shared_ptr<std::pair<Bitboard<N>, GoPlayerMove>>>
-read_games(const std::string &path) {
-    std::vector<std::shared_ptr<std::pair<Bitboard<N>, GoPlayerMove>>> moves;
+template <std::size_t N>
+std::vector<std::pair<BitboardPtr<N>, GoPlayerMove>>
+read_games(std::string const & path, bool verbose = true) {
+    std::vector<std::pair<BitboardPtr<N>, GoPlayerMove>> moves;
 
     /* find all .sgf files */
     std::vector<boost::filesystem::path> all_files;
@@ -57,7 +57,8 @@ read_games(const std::string &path) {
 
     std::sort(all_files.begin(), all_files.end());
 
-    std::cout << all_files.size() << " sgf files found..." << std::flush;
+    if (verbose)
+        std::cout << all_files.size() << " sgf files found..." << std::flush;
 
     /* read all files */
     for(std::size_t i = 0; i < all_files.size(); ++i) {
@@ -67,6 +68,7 @@ read_games(const std::string &path) {
 
         SgGameReader reader(in);
         SgNode* root = reader.ReadGame();
+        in.close();
 
         if (root == 0) { std::cerr << "No games in file " << file.string() << std::endl; continue; }
         if (reader.GetWarnings().any()){ SgWarning() << file.string() << ":\n"; reader.PrintWarnings(SgDebug()); }
@@ -80,25 +82,27 @@ read_games(const std::string &path) {
         game.SetRulesGlobal(rules);
 
         if (game.Board().Size() != N) {
-            std::cout << "Warning: I am skipping game " << file.string()
-                      << " because its board size is " << game.Board().Size()
-                      << " instead of " << N << "." << std::endl;
+            if (verbose)
+                std::cout << "Warning: I am skipping game " << file.string()
+                          << " because its board size is " << game.Board().Size()
+                          << " instead of " << N << "." << std::endl;
             continue;
         }
 
         /* iterate over all moves in the game */
         while(true){
             if(game.CurrentNode()->IsBranchPoint()) {
-                std::cout << "Warning: I am skipping the rest of game " << file.string()
-                          << " because from here on it contains branches." << std::endl;
+                if (verbose)
+                    std::cout << "Warning: I am skipping the rest of game " << file.string()
+                              << " because from here on it contains branches." << std::endl;
                 break;
             }
             SgMove move = game.CurrentMove();
             // push current move if it's not special (pass move or before game start)
             if(!SgIsSpecialMove(move)) {
                 GoPlayerMove player_move(game.Board().ToPlay(), game.CurrentMove());
-                auto combo = std::make_pair(Bitboard<N>(game.Board()), player_move);
-                moves.push_back(std::make_shared<std::pair<Bitboard<N>, GoPlayerMove>>(combo));
+                BitboardPtr<N> board = Bitboard<N>::create(game.Board());
+                moves.emplace_back(board, player_move);
             }
             if(!game.CanGoInDirection(SgNode::Direction::NEXT))
                 break;

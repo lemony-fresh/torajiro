@@ -4,6 +4,7 @@
 #include <ostream>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 #include "util.h"
 
@@ -12,66 +13,81 @@
 #include "SgBoardColor.h"
 #include "SgBWArray.h"
 
+template <std::size_t N> class Bitboard;
+
+template <std::size_t N> using BitboardPtr = std::shared_ptr<Bitboard<N> >;
+
 // N defines the board size (e.g., 9 or 19)
-template <int N>
+template <std::size_t N>
 class Bitboard
 {
 private:
 
     SgBWArray<std::bitset<N*N> > bw_bitboards;
 
-    inline int twoDto1D(int x, int y) const {
+    static std::size_t twoDto1D(std::size_t x, std::size_t y) {
         return y * N + x;
     }
 
 public:
-    Bitboard(){
-    }
 
-    Bitboard(const GoBoard& other){
+    Bitboard() {}
+
+    Bitboard(GoBoard const & other) {
         assert(N == other.Size());
-        for(int y = 1; y <= N; ++y)
-            for(int x = 1; x <= N; ++x){
+        for (std::size_t y = 1; y <= N; ++y)
+            for (std::size_t x = 1; x <= N; ++x) {
                 SgPoint p = SgPointUtil::Pt(x, y);
                 set(p, other.GetColor(p));
             }
     }
 
-    bool is_occupied(SgPoint const & p) const {
-        int i = twoDto1D(SgPointUtil::Col(p) - 1, SgPointUtil::Row(p) - 1);
-        for(SgBWIterator it; it; ++it)
-            if(bw_bitboards[*it][i]) return true;
-        return false;
+    Bitboard(Bitboard<N> const & other) {
+        for (SgBWIterator it; it; ++it)
+            bw_bitboards[*it] = other.bw_bitboards[*it];
+    }
+
+    /**
+     * Short-hand to directly construct a new
+     * Bitboard and obtain a shared pointer to it.
+     */
+    template <typename... Args>
+    static BitboardPtr<N> create(Args&&... args) {
+      return std::make_shared<Bitboard<N> >(std::forward<Args>(args)...);
     }
 
     SgBoardColor get(SgPoint const & p) const {
-        int i = twoDto1D(SgPointUtil::Col(p) - 1, SgPointUtil::Row(p) - 1);
-        for(SgBWIterator it; it; ++it)
-            if(bw_bitboards[*it][i]) return *it;
+        std::size_t const i = twoDto1D(SgPointUtil::Col(p) - 1, SgPointUtil::Row(p) - 1);
+        for (SgBWIterator it; it; ++it)
+            if (bw_bitboards[*it][i]) return *it;
         return SG_EMPTY;
     }
 
     void set(SgPoint const & p, SgBoardColor const & color) {
-        int i = twoDto1D(SgPointUtil::Col(p) - 1, SgPointUtil::Row(p) - 1);
+        std::size_t const i = twoDto1D(SgPointUtil::Col(p) - 1, SgPointUtil::Row(p) - 1);
         if (color == SG_BLACK || color == SG_WHITE)
             for (SgBWIterator it; it; ++it)
                 bw_bitboards[*it][i] = (*it == color);
-        else if(color == SG_EMPTY)
-            for(SgBWIterator it; it; ++it)
+        else if (color == SG_EMPTY)
+            for (SgBWIterator it; it; ++it)
                 bw_bitboards[*it][i] = false;
-        assert(color == SG_BLACK || color == SG_WHITE || color == SG_EMPTY);
+        assert(SgIsEmptyBlackWhite(color));
     }
 
-    friend std::ostream& operator<<(std::ostream& o, const Bitboard& b) {
+    void invert() {
+        std::swap(bw_bitboards[SG_BLACK], bw_bitboards[SG_WHITE]);
+    }
+
+    friend std::ostream& operator<<(std::ostream& o, Bitboard const & b) {
         o << "\n  ";
         if (N >= 10)
             o << " ";
-        for (int y = 1; y <= N; ++y)
+        for (std::size_t y = 1; y <= N; ++y)
             o << SgPointUtil::Letter(y) << " ";
         o << "\n";
-        for (int y = 1; y <= N; ++y){
+        for (std::size_t y = 1; y <= N; ++y) {
             o << (y < 10 && N >= 10 ? " " : "") << y << " ";
-            for (int x = 1; x <= N; ++x) {
+            for (std::size_t x = 1; x <= N; ++x) {
                 SgPoint p = SgPointUtil::Pt(x,y);
                 switch (b.get(p)) {
                 case SG_WHITE: o << "O "; break;
@@ -85,7 +101,7 @@ public:
         o << "  ";
         if (N >= 10)
             o << " ";
-        for(int y = 1; y <= N; ++y)
+        for (std::size_t y = 1; y <= N; ++y)
             o << SgPointUtil::Letter(y) << " ";
         o << std::endl;
         return o;
