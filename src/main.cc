@@ -14,6 +14,7 @@
 #include "move_normalizer.h"
 #include "pattern.h"
 #include "pattern_generator.h"
+#include "pattern_ranker.h"
 
 template <std::size_t N> void do_everything(std::string const& database_path) {
 
@@ -21,20 +22,20 @@ template <std::size_t N> void do_everything(std::string const& database_path) {
     GoInit();
 
     std::cout << "Reading all sgf games..." << std::flush;
-    std::vector<std::pair<BitboardPtr<N>, GoPlayerMove>> moves = read_games<N>(database_path);
-    std::cout << moves.size() << " moves found." << std::endl;
+    std::vector<std::pair<BitboardPtr<N>, GoPlayerMove>> training_set = read_games<N>(database_path);
+    std::cout << training_set.size() << " moves found." << std::endl;
 
     std::cout << "Normalizing all moves..." << std::flush;
-    normalize_all_moves(moves);
+    normalize_all_moves(training_set);
     std::cout << "done." << std::endl;
 
     std::cout << "Generating patterns..." << std::flush;
-    std::vector<PatternPtr<N>> patterns = generate_patterns<N>(moves);
+    std::vector<PatternPtr<N>> patterns = generate_patterns<N>(training_set);
     std::cout << patterns.size() << " patterns generated." << std::endl;
 
-    // assign all patterns scores how often they matched in the training set and how often they were actually played
+    std::vector<std::pair<PatternPtr<N>, float>> ranked_patterns = rank_patterns(patterns, training_set);
 
-    // prune too infrequently used and too inaccurate patterns
+    // TODO evaluate prediction accuracy with test set
 
     SgFini();
     GoFini();

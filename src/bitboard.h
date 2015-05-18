@@ -14,6 +14,7 @@
 #include "SgBWArray.h"
 
 template <std::size_t N> class Bitboard;
+template <std::size_t N> class Pattern;
 
 template <std::size_t N> using BitboardPtr = std::shared_ptr<Bitboard<N> >;
 
@@ -21,15 +22,21 @@ template <std::size_t N> using BitboardPtr = std::shared_ptr<Bitboard<N> >;
 template <std::size_t N>
 class Bitboard
 {
+
 private:
 
     SgBWArray<std::bitset<N*N> > bw_bitboards;
 
-    static std::size_t twoDto1D(std::size_t x, std::size_t y) {
-        return y * N + x;
+    void
+    swap(SgPoint const & a, SgPoint const & b){
+        SgBoardColor temp = this->get(a);
+        this->set(a, this->get(b));
+        this->set(b, temp);
     }
 
 public:
+
+    friend Pattern<N>;
 
     Bitboard() {}
 
@@ -53,18 +60,18 @@ public:
      */
     template <typename... Args>
     static BitboardPtr<N> create(Args&&... args) {
-      return std::make_shared<Bitboard<N> >(std::forward<Args>(args)...);
+        return std::make_shared<Bitboard<N> >(std::forward<Args>(args)...);
     }
 
     SgBoardColor get(SgPoint const & p) const {
-        std::size_t const i = twoDto1D(SgPointUtil::Col(p) - 1, SgPointUtil::Row(p) - 1);
+        std::size_t const i = util::twoDto1D<N>(SgPointUtil::Col(p) - 1, SgPointUtil::Row(p) - 1);
         for (SgBWIterator it; it; ++it)
             if (bw_bitboards[*it][i]) return *it;
         return SG_EMPTY;
     }
 
     void set(SgPoint const & p, SgBoardColor const & color) {
-        std::size_t const i = twoDto1D(SgPointUtil::Col(p) - 1, SgPointUtil::Row(p) - 1);
+        std::size_t const i = util::twoDto1D<N>(SgPointUtil::Col(p) - 1, SgPointUtil::Row(p) - 1);
         if (color == SG_BLACK || color == SG_WHITE)
             for (SgBWIterator it; it; ++it)
                 bw_bitboards[*it][i] = (*it == color);
@@ -76,6 +83,33 @@ public:
 
     void invert() {
         std::swap(bw_bitboards[SG_BLACK], bw_bitboards[SG_WHITE]);
+    }
+
+    void flip_horizontally() {
+        for(std::size_t y = 1; y <= N; ++y) {
+            for(std::size_t x1 = 1; x1 <= N/2; ++x1) {
+                std::size_t x2 = N + 1 - x1;
+                swap(SgPointUtil::Pt(x1, y), SgPointUtil::Pt(x2, y));
+            }
+        }
+    }
+
+    void flip_vertically() {
+        for(std::size_t y1 = 1; y1 <= N/2; ++y1) {
+            std::size_t y2 = N + 1 - y1;
+            for(std::size_t x = 1; x <= N; ++x)
+                swap(SgPointUtil::Pt(x, y1), SgPointUtil::Pt(x, y2));
+        }
+    }
+
+    void flip_on_secondary_diagonal() {
+        for(std::size_t y1 = 1; y1 <= N; ++y1) {
+            std::size_t x2 = N + 1 - y1;
+            for(std::size_t x1 = 1; x1 < x2; ++x1) {
+                std::size_t y2 = N + 1 - x1;
+                swap(SgPointUtil::Pt(x1, y1), SgPointUtil::Pt(x2, y2));
+            }
+        }
     }
 
     friend std::ostream& operator<<(std::ostream& o, Bitboard const & b) {
