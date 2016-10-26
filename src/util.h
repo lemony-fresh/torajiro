@@ -19,3 +19,11 @@ template<std::size_t N> constexpr int twoDto1D(int x, int y) {
 }
 
 }
+
+#ifdef TORAASSERT
+#define tora_assert(expr) { if(!(expr)) { std::cerr << "assertion violated in file " << __FILE__ << ", line " << __LINE__ << std::endl; }}
+#define tora_equals(a,b) { if((a)!=(b)) { std::cerr << "left doesn't equal right expression in file " << __FILE__ << ", line " << __LINE__ << ": " << a << " != " << b << std::endl; }}
+#else
+#define tora_assert(ignore) {}
+#define tora_equals(ignore_a, ignore_b) {}
+#endif

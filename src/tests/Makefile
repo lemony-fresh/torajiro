@@ -8,7 +8,7 @@ vpath gtest_main.a ${GTEST_PATH}/make/
 
 EXT_INCL = -I${FUEGO_BASEPATH}/go -I${FUEGO_BASEPATH}/smartgame -I${GTEST_PATH}/include
 CXXFLAGS := $(shell grep CXXFLAGS ${FUEGO_BASEPATH}/Makefile | cut -d'=' -f2)
-CXXFLAGS += -Wall -Wextra -pedantic -funsafe-math-optimizations -fno-math-errno -O3 -g -std=c++11 -I${BASE_PATH} ${EXT_INCL}
+CXXFLAGS += -Wall -Wextra -pedantic -funsafe-math-optimizations -fno-math-errno -O3 -g -pthread -std=c++11 -I${BASE_PATH} ${EXT_INCL}
 
 SOURCES = $(wildcard ./gtest_*.cc)
 LDLIBS += -L${FUEGO_BASEPATH}/go -L${FUEGO_BASEPATH}/smartgame -lfuego_go -lfuego_smartgame -lboost_system -lboost_filesystem

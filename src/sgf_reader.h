@@ -23,14 +23,6 @@
 #include "bitboard.h"
 
 /**
- * @return true iff the given path ends with ".sgf"
- */
-bool ends_with_sgf(const boost::filesystem::path& s) {
-    std::string extension(".sgf");
-    return extension.compare(s.extension().string()) == 0;
-}
-
-/**
  * @brief read_games reads all go games below the given path
  * @param path if path is a file, only this file is read, otherwise all sgf files below this path are read.
  * @return
@@ -38,6 +30,7 @@ bool ends_with_sgf(const boost::filesystem::path& s) {
 template <std::size_t N>
 std::vector<std::pair<BitboardPtr<N>, GoPlayerMove>>
 read_games(std::string const & path, bool verbose = true) {
+
     std::vector<std::pair<BitboardPtr<N>, GoPlayerMove>> moves;
 
     /* find all .sgf files */
@@ -46,12 +39,12 @@ read_games(std::string const & path, bool verbose = true) {
     if (!boost::filesystem::exists(p) ||
             (!boost::filesystem::is_regular_file(p) && !boost::filesystem::is_directory(p)))
         return moves;
-    if (boost::filesystem::is_regular_file(p) && ends_with_sgf(p)) { // p is a file
+    if (boost::filesystem::is_regular_file(p) && std::string(".sgf").compare(p.extension().string()) == 0) { // p is a file and ends on ".sgf"
         all_files.push_back(p);
     } else { // p is a folder
         boost::filesystem::recursive_directory_iterator it(boost::filesystem::absolute(p)), end;
         for(; it != end; it++)
-            if(boost::filesystem::is_regular_file(it->path()) && ends_with_sgf(it->path()))
+            if(boost::filesystem::is_regular_file(it->path()) && std::string(".sgf").compare(it->path().extension().string()) == 0)
                 all_files.push_back(it->path());
     }
 
@@ -73,6 +66,7 @@ read_games(std::string const & path, bool verbose = true) {
         if (root == 0) { std::cerr << "No games in file " << file.string() << std::endl; continue; }
         if (reader.GetWarnings().any()){ SgWarning() << file.string() << ":\n"; reader.PrintWarnings(SgDebug()); }
 
+
         /* convert node tree into game */
         GoGame game;
         game.Init(root);
@@ -83,9 +77,8 @@ read_games(std::string const & path, bool verbose = true) {
 
         if (game.Board().Size() != N) {
             if (verbose)
-                std::cout << "Warning: I am skipping game " << file.string()
-                          << " because its board size is " << game.Board().Size()
-                          << " instead of " << N << "." << std::endl;
+                std::cout << "Warning: I am skipping game " << file.string() << " because its board size is "
+                          << game.Board().Size() << " instead of " << N << "." << std::endl;
             continue;
         }
 
@@ -93,16 +86,19 @@ read_games(std::string const & path, bool verbose = true) {
         while(true){
             if(game.CurrentNode()->IsBranchPoint()) {
                 if (verbose)
-                    std::cout << "Warning: I am skipping the rest of game " << file.string()
-                              << " because from here on it contains branches." << std::endl;
+                    std::cout << "Warning: I am skipping the rest of game " << file.string() << " because from move "
+                              << game.CurrentMoveNumber() << " on it contains branches." << std::endl;
                 break;
             }
             SgMove move = game.CurrentMove();
             // push current move if it's not special (pass move or before game start)
             if(!SgIsSpecialMove(move)) {
-                GoPlayerMove player_move(game.Board().ToPlay(), game.CurrentMove());
+                SgPoint move = game.CurrentMove();
+                game.GoInDirection(SgNode::Direction::PREVIOUS);
+                GoPlayerMove player_move(game.Board().ToPlay(), move);
                 BitboardPtr<N> board = Bitboard<N>::create(game.Board());
                 moves.emplace_back(board, player_move);
+                game.GoInDirection(SgNode::Direction::NEXT);
             }
             if(!game.CanGoInDirection(SgNode::Direction::NEXT))
                 break;

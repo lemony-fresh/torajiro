@@ -1,5 +1,3 @@
-statt die Pattern zu rotieren oder die rotierten Formen vorzuberechnen stattdessen vor dem Matching das Brett, das in die Query gesteckt wird, in alle 8 Rotationen bringen
-
 die Patterntranslationen werden beim Matching durchgefuehrt: geht bei Bitboards einfach und man braucht sich nur merken, welche Translationen nicht zu einem Overflow fuehren
 
 leere Felder (bis hin zum k-ten Stein) werden auch ins Bitboard aufgenommen

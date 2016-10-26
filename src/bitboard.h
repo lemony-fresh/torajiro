@@ -41,7 +41,9 @@ public:
     Bitboard() {}
 
     Bitboard(GoBoard const & other) {
-        assert(N == other.Size());
+
+        tora_equals(N, other.Size());
+
         for (std::size_t y = 1; y <= N; ++y)
             for (std::size_t x = 1; x <= N; ++x) {
                 SgPoint p = SgPointUtil::Pt(x, y);
@@ -53,6 +55,14 @@ public:
         for (SgBWIterator it; it; ++it)
             bw_bitboards[*it] = other.bw_bitboards[*it];
     }
+
+    bool operator==(Bitboard<N> const & rhs) {
+        for (SgBWIterator it; it; ++it)
+            if (bw_bitboards[*it] != rhs.bw_bitboards[*it])
+                return false;
+        return true;
+    }
+    bool operator!=(Bitboard<N> const & rhs){ return !(this == rhs); }
 
     /**
      * Short-hand to directly construct a new
@@ -78,7 +88,8 @@ public:
         else if (color == SG_EMPTY)
             for (SgBWIterator it; it; ++it)
                 bw_bitboards[*it][i] = false;
-        assert(SgIsEmptyBlackWhite(color));
+
+        tora_assert(SgIsEmptyBlackWhite(color));
     }
 
     void invert() {
@@ -124,8 +135,8 @@ public:
             for (std::size_t x = 1; x <= N; ++x) {
                 SgPoint p = SgPointUtil::Pt(x,y);
                 switch (b.get(p)) {
-                case SG_WHITE: o << "O "; break;
-                case SG_BLACK: o << "X "; break;
+                case SG_WHITE: o << "W "; break;
+                case SG_BLACK: o << "B "; break;
                 case SG_EMPTY: o << (util::is_star_point<N>(p) ? "+ " : ". "); break;
                 default: throw std::invalid_argument("color was neither white, nor black, nor empty");
                 }

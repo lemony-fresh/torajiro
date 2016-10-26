@@ -2,6 +2,7 @@
 
 #include <random>
 #include <chrono>
+#include <map>
 
 // must be included first
 #include "SgSystem.h"
@@ -13,7 +14,6 @@
 #include "GoPlayerMove.h"
 
 #include "bitboard.h"
-#include "sgf_reader.h"
 
 TEST(BitBoardTest, Copy)
 {

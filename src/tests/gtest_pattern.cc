@@ -15,9 +15,9 @@ TEST(BitBoardTest, DISABLED_PatternsUnmodifiedAfterMatching)
 
     int const N = 9;
 
-    // TODO: write test that checks that patterns are unmodified after the matching process
+    // TODO: write test that checks that patterns are unmodified (not translated, etc.) after the matching process
 
-    Pattern<N> pat;
+//    Pattern<N> pat;
 
     SgFini();
     GoFini();

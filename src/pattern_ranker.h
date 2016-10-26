@@ -15,7 +15,11 @@ rank_patterns
 
     // insert all patterns into the map (if they are not yet
     // in it) and increment the match and the play counter
-    for (PatternPtr<N> pattern : patterns) {
+#pragma omp parallel for schedule(dynamic)
+    for (std::size_t i = 0; i < patterns.size(); ++i) {
+#pragma omp critical
+        if(i % 100 == 0) std::cout << "\rRanking pattern " << i << " of " << patterns.size() << "..." << std::flush;
+        PatternPtr<N> pattern = patterns[i];
         auto to_insert = std::make_pair(pattern, std::make_pair(std::size_t(0), std::size_t(0)));
         auto position = pattern_matches_and_plays.insert(to_insert).first; // this only inserts if it's not yet in there
         for (std::pair<BitboardPtr<N>, GoPlayerMove> const & training_ex : training_set) {
@@ -27,8 +31,10 @@ rank_patterns
             }
         }
     }
+    std::cout << "finished." << std::endl;
 
     // compute accuracy and insert into result list
+    std::cout << "Computing accuracy..." << std::flush;
     float const min_relative_play_frequency = 0.0001f;
     float const min_accuracy = 0.25f;
     std::vector<std::pair<PatternPtr<N>, float>> result;
@@ -44,6 +50,7 @@ rank_patterns
         [] (std::pair<PatternPtr<N>, float> const & a, std::pair<PatternPtr<N>, float> const & b)
             {return a.second > b.second;}
     );
+    std::cout << std::endl;
 
     return result;
 }
